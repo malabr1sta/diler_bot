@@ -2,9 +2,10 @@
 #include <stdlib.h>
 #include <string.h>
 #include <curl/curl.h>
+#include <unistd.h>
 
 #include "telegramm.h"
-
+#include "json_parser.h"
 
 static char bot_id[size_buf_id] = {};
 
@@ -91,7 +92,11 @@ char *send_message(char *chat_id, char *text)
 {
   char json_buffer_send[size_json_buffer_send] = {};
   struct memory chunk = {0};
-  sprintf(json_buffer_send, "{\"chat_id\":\"%.50s\",\"text\":\"%.20s\"}", chat_id, text);
+  sprintf(
+    json_buffer_send,
+    "{\"chat_id\":\"%.50s\",\"text\":\"%.20s\"}",
+    chat_id, text
+  );
   return request_tgmm(SEND_MESSAGE, "POST", json_buffer_send);
 }
 
@@ -108,25 +113,53 @@ char *get_update(char *offset, char *limit, char *timeout)
 }
 
 
-void polling_tgmm(void (*ptr)(char*))
+static struct message_data *init_chat(const char *response)
 {
+  struct message_data *chat;
+  chat = malloc(sizeof(struct message_data));
+  chat->id = get_value_json(response, FIELD_NAME_ID);
+  chat->username = get_value_json(response, FIELD_NAME_USERNAME);
+  chat->message_id = get_value_json(response, FIELD_NAME_MESSAGE_ID);
+  chat->text = get_value_json(response, FIELD_NAME_TEXT);
+  chat->date = get_value_json(response, FIELD_NAME_DATA);
+  return chat;
+}
+
+static void free_chat(struct message_data *chat)
+{
+  free(chat->id);
+  free(chat->username);
+  free(chat->message_id);
+  free(chat->text);
+  free(chat->date);
+  free(chat);
+}
+
+
+void polling_tgmm(void (*callback)(struct message_data *, int*))
+{
+  struct message_data *chat;
+  int val_sleep=polling_rate;
   char *response;
-  while(1) {
+  char *value=NULL;
+  while(run) {
     response = get_update(
       GET_UPDATES_OFFSET,
       GET_UPDATES_LIMIT,
       GET_UPDATES_TIEMEOUT
     );
-    /* (*ptr)(response); */
-    printf("%s\n", response);
+    chat = init_chat(response);
+    printf("%s\n", chat->message_id);
     free(response);
+    /* (*callback)(chat, &val_sleep); */
+    free_chat(chat);
+    sleep(val_sleep);
   }
 }
 
 
 int main()
 {
-  char *response;
   init_bot();
   polling_tgmm(NULL);
   return 0;
