@@ -1,0 +1,16 @@
+[tool.poetry]
+name = "magnit"
+version = "0.1.0"
+description = ""
+authors = ["George <marchiladzegeorge@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+scrapy = "^2.11.0"
+ipython = "^8.20.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
