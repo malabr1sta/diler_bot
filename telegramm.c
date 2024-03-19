@@ -8,6 +8,7 @@
 #include "json_parser.h"
 
 static char bot_id[size_buf_id] = {};
+static char json_buffer_update[size_json_buffer_update] = {};
 
 struct memory {
   char *response;
@@ -59,6 +60,7 @@ static char *request_tgmm(char *tgmm_method, char *http_method, char *data)
 
 
 static int read_ln(FILE *f, char *s, int size)
+/* function read first line in .env and write bot_id in *s */
 {
   int count;
   char c;
@@ -77,6 +79,7 @@ static int read_ln(FILE *f, char *s, int size)
 
 
 void init_bot()
+/* function reads id and writes data to bot_id */
 {
   FILE *env;
   env = fopen(ENV_FILE_NAME, "r");
@@ -94,7 +97,7 @@ char *send_message(char *chat_id, char *text)
   struct memory chunk = {0};
   sprintf(
     json_buffer_send,
-    "{\"chat_id\":\"%.50s\",\"text\":\"%.20s\"}",
+    "{\"chat_id\":\"%.50s\",\"text\":\"%.100s\"}",
     chat_id, text
   );
   return request_tgmm(SEND_MESSAGE, "POST", json_buffer_send);
@@ -102,7 +105,6 @@ char *send_message(char *chat_id, char *text)
 
 char *get_update(char *offset, char *limit, char *timeout)
 {
-  char json_buffer_update[size_json_buffer_update] = {};
   struct memory chunk_update = {0};
   sprintf(
     json_buffer_update,
@@ -136,10 +138,12 @@ static void free_chat(struct message_data *chat)
 }
 
 
-void polling_tgmm(void (*callback)(struct message_data *, int*))
+void polling_tgmm(void (*callback)(struct message_data*))
 {
   struct message_data *chat;
   int val_sleep=polling_rate;
+  int last_message_id=-1;
+  int now_message_id;
   char *response;
   char *value=NULL;
   while(run) {
@@ -148,22 +152,16 @@ void polling_tgmm(void (*callback)(struct message_data *, int*))
       GET_UPDATES_LIMIT,
       GET_UPDATES_TIEMEOUT
     );
+    if(!response)
+      continue;
     chat = init_chat(response);
-    printf("%s\n", chat->message_id);
     free(response);
-    /* (*callback)(chat, &val_sleep); */
+    now_message_id = atoi(chat->message_id);
+    if(last_message_id != now_message_id) {
+      last_message_id = now_message_id;
+      (*callback)(chat);
+    }
     free_chat(chat);
     sleep(val_sleep);
   }
 }
-
-
-int main()
-{
-  init_bot();
-  polling_tgmm(NULL);
-  return 0;
-}
-
-
-

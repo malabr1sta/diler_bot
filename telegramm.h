@@ -48,6 +48,6 @@ void init_bot(void);
 char *send_message(char *chat_id, char *text);
 char *get_update(char *offset, char *limit, char *timeout);
 
-void polling_tgmm(void (*callback)(struct message_data *, int*));
+void polling_tgmm(void (*callback)(struct message_data*));
 
 #endif
