@@ -6,6 +6,6 @@ enum size_amount_bid {
   chip_size=5,
 };
 
-int *zero_shpil(int summ);
+int *roulette(int summ, int *input, int *twin);
 
 #endif

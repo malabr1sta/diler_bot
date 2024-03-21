@@ -7,26 +7,98 @@
 enum zero_result {
   amount_ind=0,
   change_ind=1,
-  count_position_z = 4,
 };
 
-int *zero_shpil(int summ)
+enum ind {
+  play_buy_ind=0,
+  rest_ind=1,
+  stright_ind = 0,
+  spleet_ind = 1,
+  street_ind = 2,
+  corner_ind = 3,
+
+  stight_cof = 1,
+  spleet_cof = 2,
+  street_cof = 3,
+  corner_cof = 4,
+};
+
+
+static void sort_arr(int *arr_size, int *arr_cof, int *arr_twin, int len)
+{
+  for(int i=0; i < len - 1; i++) {
+    for(int j=i+1; j < len; j++) {
+      if(arr_size[i] > arr_size[j]) {
+        int var;
+        var = arr_size[j];
+        arr_size[j] = arr_size[i];
+        arr_size[i] = var;
+        
+        var = arr_cof[j];
+        arr_cof[j] = arr_cof[i];
+        arr_cof[i] = var;
+
+        var = arr_twin[j];
+        arr_twin[j] = arr_twin[i];
+        arr_twin[i] = var;
+      }
+    }
+  }
+}
+
+
+static int *copy_arr(int *arr, int len)
+{
+  int *m = malloc(sizeof(int) * len);
+  int *p = m;
+  for(; len; len--, arr++, p++){
+    *p = *arr;
+  }
+  return m;
+}
+
+
+int *roulette(int summ, int *input, int *twin)
 {
   int *result=malloc(sizeof(int) * 2);
-  int amount, change;
-  change = summ % (count_position_z * chip_size);
-  amount = summ - change;
-  amount /= count_position_z;
-  result[change_ind] = change;
-  if(amount > max_size) {
-    int count_position = chip_size*(count_position_z-1);
-    change = (amount - max_size) % count_position;
-    result[change_ind] += change;
-    result[change_ind] %= count_position;
-    result[amount_ind] = (summ - result[change_ind] - max_size) / (count_position_z - 1);
-  } else {
-    result[amount_ind] = amount;
+  int *arr_max_size=malloc(sizeof(int) * 4);
+  int count;
+  int *copy_twin, *copy_input;
+  result[play_buy_ind] = 0;
+  result[rest_ind] = 0;
+
+  count = 0;
+  for(int i=0; i < 4; i++) {
+    count += input[i] * twin[i];
   }
+  for(int i=0; i < 4; i++) {
+    if(!input[i]) {
+      arr_max_size[i] = 1000000;
+      continue;
+    }
+    arr_max_size[i] = max_size * (i+1) / twin[i]; 
+  }
+  copy_twin = copy_arr(twin, 4);
+  copy_input = copy_arr(input, 4);
+  sort_arr(arr_max_size, copy_input, copy_twin, 4);
+
+  for(int i=0; i < 4; i++) {
+    if(arr_max_size[i] == 1000000) {
+      break;
+    }
+    if(summ > arr_max_size[i] * count) {
+      summ -= arr_max_size[i] * count;
+      count -= copy_input[i] * copy_twin[i];
+      result[play_buy_ind] = arr_max_size[i];
+    } else {
+      result[rest_ind] = summ % (count * chip_size);
+      result[play_buy_ind] += (summ - result[rest_ind]) / count;
+      return result;
+    }
+  } 
+  free(arr_max_size);
+  free(copy_twin);
+  free(copy_input);
   return result;
 }
 
@@ -35,10 +107,14 @@ int main()
 {
   int x;
   int *m;
+  int input[4] = {0, 5, 1, 1};
+  int twin[4] = {0, 1, 2, 2};
   while(1) {
     scanf("%d", &x);
-    m = zero_shpil(x);
+    m = roulette(x, input, twin);
     printf("result = %d, change = %d\n", m[0], m[1]);
     free(m);
   }
+  
+  return 1;
 }
