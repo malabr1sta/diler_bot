@@ -6,6 +6,6 @@ enum size_amount_bid {
   chip_size=5,
 };
 
-int *roulette(int summ, int *input, int *twin);
+int *roulette(int summ, const int *input, const int *twin);
 
 #endif

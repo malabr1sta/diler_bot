@@ -1,62 +1,152 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 
 #include "telegramm.h"
+#include "roulette.h"
 
 
-#define TEXT_HELP  "Hi %.50s\n1: Begin game\n2: End game\n"
+#define TEXT_HELP  "Hi %.50s\ns: Begin game\ne: End game\n"
 #define TEXT_START  "Start game"
 #define TEXT_END  "End game"
 
-enum {size_buf_text=100};
+#define TEXT_ZERO_SHPIL "Bat: %d $, in zero shpil"
+#define TEXT_TIER "Bat: %d $, in tier"
+#define TEXT_ORFA "Bat: %d $, in orfa"
+#define TEXT_VUAZEN "Bat: %d $, in vuazen"
+
+
+#define TEXT_INPUT "Input play buy..."
+#define TEXT_INPUT_REST "Input rest..."
+
+#define TEXT_RESULT  "Play buy: %d $\nRest: %d $"
+
+enum {
+  size_buf_text=100,
+  zero_shpil_ind=1,
+  tier_ind=2,
+  orfa_ind=3,
+  vuazon_ind=4,
+
+  min_zero = 4*chip_size,
+  min_tier = 6*chip_size,
+  min_orfa = 5*chip_size,
+  min_vuazon = 9*chip_size,
+
+  max_zero = max_size*7,
+  max_tier = max_size*12,
+  max_orfa = max_size*9,
+  max_vuazon = max_size*17,
+};
+enum step {
+  step_1=0,
+  step_2=1,
+  step_3=2, 
+  step_4=3,
+  step_5=4,
+};
 
 char buf_text[size_buf_text] = {};
+
+const int zero_shpil[4] = {1, 3, 0, 0};
+const int zero_shpil_twin[4] = {1, 1, 0, 0};
+
+const int tier[4] = {0, 6, 0, 0};
+const int tier_twin[4] = {0, 1, 0, 0};
+
+const int orfa[4] = {1, 4, 0, 0};
+const int orfa_twin[4] = {1, 1, 0, 0};
+
+const int vuazon[4] = {0, 5, 1, 1};
+const int vuazon_twin[4] = {0, 1, 2, 2};
+
+
+int create_random(int min_num, int max_num, int step)
+{
+  return (min_num+(int)((double)max_num * rand() / (RAND_MAX + 1.0)) / step) * step;
+}
+
 
 
 void response_bot(struct message_data *chat)
 {
-  static int result;
-  int result_player;
-  static int flag_game=0;
-  static int flag_result=0;
-  if(*chat->text == '2') {
-    flag_game = 0;
-    flag_result=0;
+  static int *result;
+  static int flag_step;
+  int var;
+  if(*chat->text == 'e') {
+    flag_step = step_1;
+    result = NULL;
     send_message(chat->id, TEXT_END);
-    return;
-  }
-  if(flag_result) {
-    result_player = atoi(chat->text);
-    if(result == result_player) {
-      send_message(chat->id, "yes");
-    } else {
-      sprintf(buf_text, "Not correct, response = %d", result);
-      send_message(chat->id, buf_text);
-    }
-    flag_result = 0;
-    return;
-  }
-  if(flag_game) {
-    result = 1111111111;
-    flag_result=1;
     return;
   }
   if(*chat->text == 'h') {
     sprintf(buf_text, TEXT_HELP, chat->username);
-    printf("%s\n", buf_text);
     send_message(chat->id, buf_text);
     return;
   }
-  if(*chat->text == '1') {
-    flag_game=1;
+  if(*chat->text == 's') {
+    flag_step = step_2;
     send_message(chat->id, TEXT_START);
-    return;
+  }
+  
+  switch(flag_step) {
+
+    case(step_2):
+      flag_step = step_3;
+      var = create_random(1, 4, 1);
+      if(var == zero_shpil_ind) {
+        var = create_random(min_zero, max_zero, 5);
+        sprintf(buf_text, TEXT_ZERO_SHPIL, var);
+        send_message(chat->id, buf_text);
+        result = roulette(var, zero_shpil, zero_shpil_twin);
+        send_message(chat->id, TEXT_INPUT);
+        return;
+      }
+      if(var == tier_ind) {
+        var = create_random(min_tier, max_tier, 5);
+        sprintf(buf_text, TEXT_TIER, var);
+        send_message(chat->id, buf_text);
+        result = roulette(var, tier, tier_twin);
+        send_message(chat->id, TEXT_INPUT);
+        return;
+      }
+      if(var == orfa_ind) {
+        var = create_random(min_orfa, max_orfa, 5);
+        sprintf(buf_text, TEXT_ORFA, var);
+        send_message(chat->id, buf_text);
+        result = roulette(var, orfa, orfa_twin);
+        send_message(chat->id, TEXT_INPUT);
+        return;
+      }
+      if(var == vuazon_ind) {
+        var = create_random(min_vuazon, max_vuazon, 5);
+        sprintf(buf_text, TEXT_VUAZEN, var);
+        send_message(chat->id, buf_text);
+        result = roulette(var, vuazon, vuazon_twin);
+        send_message(chat->id, TEXT_INPUT);
+        return;
+      }
+
+    case(step_3):
+      flag_step = step_4;
+      send_message(chat->id, TEXT_INPUT_REST);
+      return;
+
+    case(step_4):
+      flag_step = step_2;
+      sprintf(buf_text, TEXT_RESULT, result[0], result[1]);
+      send_message(chat->id, buf_text);
+      free(result);
+      return;
+      
   }
   
 }
 
+
 int main()
 {
+  srand(time(NULL));
   init_bot();
   polling_tgmm(&response_bot);
   return 0;

@@ -47,7 +47,7 @@ static void sort_arr(int *arr_size, int *arr_cof, int *arr_twin, int len)
 }
 
 
-static int *copy_arr(int *arr, int len)
+static int *copy_arr(const int *arr, int len)
 {
   int *m = malloc(sizeof(int) * len);
   int *p = m;
@@ -58,7 +58,7 @@ static int *copy_arr(int *arr, int len)
 }
 
 
-int *roulette(int summ, int *input, int *twin)
+int *roulette(int summ, const int *input, const int *twin)
 {
   int *result=malloc(sizeof(int) * 2);
   int *arr_max_size=malloc(sizeof(int) * 4);
@@ -100,21 +100,4 @@ int *roulette(int summ, int *input, int *twin)
   free(copy_twin);
   free(copy_input);
   return result;
-}
-
-
-int main()
-{
-  int x;
-  int *m;
-  int input[4] = {0, 5, 1, 1};
-  int twin[4] = {0, 1, 2, 2};
-  while(1) {
-    scanf("%d", &x);
-    m = roulette(x, input, twin);
-    printf("result = %d, change = %d\n", m[0], m[1]);
-    free(m);
-  }
-  
-  return 1;
 }

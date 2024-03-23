@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include <string.h>
 #include <curl/curl.h>
 #include <unistd.h>
@@ -145,6 +146,7 @@ void polling_tgmm(void (*callback)(struct message_data*))
   int last_message_id=-1;
   int now_message_id;
   char *response;
+  char *check_res;
   char *value=NULL;
   while(run) {
     response = get_update(
@@ -152,8 +154,10 @@ void polling_tgmm(void (*callback)(struct message_data*))
       GET_UPDATES_LIMIT,
       GET_UPDATES_TIEMEOUT
     );
-    if(!response)
+    check_res = get_value_json(response, "result\0");
+    if(!is_letter(*check_res)) {
       continue;
+    }
     chat = init_chat(response);
     free(response);
     now_message_id = atoi(chat->message_id);

@@ -6,7 +6,7 @@
 #include "json_parser.h"
 
 
-static bool is_letter(char c)
+bool is_letter(char c)
 {
   if (isalnum(c) || c == '_' || c == '-') {
     return true;
