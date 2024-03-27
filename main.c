@@ -10,13 +10,13 @@
 #define TEXT_START  "Start game"
 #define TEXT_END  "End game"
 
-#define TEXT_ZERO_SHPIL "Bat: %d $, in zero shpil"
-#define TEXT_TIER "Bat: %d $, in tier"
-#define TEXT_ORFA "Bat: %d $, in orfa"
-#define TEXT_VUAZEN "Bat: %d $, in vuazen"
+#define TEXT_ZERO_SHPIL "Roulette %d\nBet: %d $, in zero shpil"
+#define TEXT_TIER "Roulette %d\nBet: %d $, in tier"
+#define TEXT_ORFA "Roulette %d\nBet: %d $, in orphelins"
+#define TEXT_VUAZEN "Roulette %d\nBet: %d $, in voisins"
 
 
-#define TEXT_INPUT "Input play buy..."
+#define TEXT_INPUT "Input play by..."
 #define TEXT_INPUT_REST "Input rest..."
 
 #define TEXT_RESULT  "Play buy: %d $\nRest: %d $"
@@ -95,32 +95,32 @@ void response_bot(struct message_data *chat)
       flag_step = step_3;
       var = create_random(1, 4, 1);
       if(var == zero_shpil_ind) {
-        var = create_random(min_zero, max_zero, 5);
-        sprintf(buf_text, TEXT_ZERO_SHPIL, var);
+        var = create_random(min_zero, max_zero, chip_size);
+        sprintf(buf_text, TEXT_ZERO_SHPIL, max_size, var);
         send_message(chat->id, buf_text);
         result = roulette(var, zero_shpil, zero_shpil_twin);
         send_message(chat->id, TEXT_INPUT);
         return;
       }
       if(var == tier_ind) {
-        var = create_random(min_tier, max_tier, 5);
-        sprintf(buf_text, TEXT_TIER, var);
+        var = create_random(min_tier, max_tier, chip_size);
+        sprintf(buf_text, TEXT_TIER, max_size, var);
         send_message(chat->id, buf_text);
         result = roulette(var, tier, tier_twin);
         send_message(chat->id, TEXT_INPUT);
         return;
       }
       if(var == orfa_ind) {
-        var = create_random(min_orfa, max_orfa, 5);
-        sprintf(buf_text, TEXT_ORFA, var);
+        var = create_random(min_orfa, max_orfa, chip_size);
+        sprintf(buf_text, TEXT_ORFA, max_size, var);
         send_message(chat->id, buf_text);
         result = roulette(var, orfa, orfa_twin);
         send_message(chat->id, TEXT_INPUT);
         return;
       }
       if(var == vuazon_ind) {
-        var = create_random(min_vuazon, max_vuazon, 5);
-        sprintf(buf_text, TEXT_VUAZEN, var);
+        var = create_random(min_vuazon, max_vuazon, chip_size);
+        sprintf(buf_text, TEXT_VUAZEN,  max_size, var);
         send_message(chat->id, buf_text);
         result = roulette(var, vuazon, vuazon_twin);
         send_message(chat->id, TEXT_INPUT);

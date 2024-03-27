@@ -10,6 +10,7 @@
 
 static char bot_id[size_buf_id] = {};
 static char json_buffer_update[size_json_buffer_update] = {};
+const char *check_res = "{\"ok\":true,\"result\":[]}\0";
 
 struct memory {
   char *response;
@@ -138,6 +139,14 @@ static void free_chat(struct message_data *chat)
   free(chat);
 }
 
+static int check_message(char *s1)
+{
+  for(int i=0; check_res[i]; s1++, i++) {
+    if(check_res[i] != *s1)
+      return 0;
+  } 
+  return 1;
+}
 
 void polling_tgmm(void (*callback)(struct message_data*))
 {
@@ -146,7 +155,6 @@ void polling_tgmm(void (*callback)(struct message_data*))
   int last_message_id=-1;
   int now_message_id;
   char *response;
-  char *check_res;
   char *value=NULL;
   while(run) {
     response = get_update(
@@ -154,8 +162,9 @@ void polling_tgmm(void (*callback)(struct message_data*))
       GET_UPDATES_LIMIT,
       GET_UPDATES_TIEMEOUT
     );
-    check_res = get_value_json(response, "result\0");
-    if(!is_letter(*check_res)) {
+    if(check_message(response)) {
+      free(response);
+      sleep(val_sleep);
       continue;
     }
     chat = init_chat(response);
