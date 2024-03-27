@@ -63,9 +63,16 @@ const int vuazon_twin[4] = {0, 1, 2, 2};
 
 int create_random(int min_num, int max_num, int step)
 {
-  return (min_num+(int)((double)max_num * rand() / (RAND_MAX + 1.0)) / step) * step;
+  int num;
+  num = (1+(int)((double)max_num * rand() / (RAND_MAX + 1.0)) / step) * step;
+  if(num < min_num) {
+    num += min_num;
+  }
+  if(num > max_num) {
+    num = max_num;
+  }
+  return num;
 }
-
 
 
 void response_bot(struct message_data *chat)
