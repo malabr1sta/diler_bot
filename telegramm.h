@@ -30,7 +30,7 @@ enum setting {
   size_url_buffer=300,
   size_json_buffer_send=200,
   size_json_buffer_update=200,
-  polling_rate=5,
+  polling_rate=0,
 };
 
 enum run_bot {run=1};

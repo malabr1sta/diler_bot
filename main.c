@@ -19,7 +19,7 @@
 #define TEXT_INPUT "Input play by..."
 #define TEXT_INPUT_REST "Input rest..."
 
-#define TEXT_RESULT  "Play buy: %d $\nRest: %d $"
+#define TEXT_RESULT  "Play by: %d $\nRest: %d $"
 
 enum {
   size_buf_text=100,
