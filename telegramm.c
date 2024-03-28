@@ -129,15 +129,6 @@ static struct message_data *init_chat(const char *response)
   return chat;
 }
 
-static void free_chat(struct message_data *chat)
-{
-  free(chat->id);
-  free(chat->username);
-  free(chat->message_id);
-  free(chat->text);
-  free(chat->date);
-  free(chat);
-}
 
 static int check_message(char *s1)
 {
@@ -174,7 +165,7 @@ void polling_tgmm(void (*callback)(struct message_data*))
       last_message_id = now_message_id;
       (*callback)(chat);
     }
-    free_chat(chat);
+    free(chat);
     sleep(val_sleep);
   }
 }
